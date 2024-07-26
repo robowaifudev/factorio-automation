@@ -88,8 +88,37 @@ local function log_player_info(player_id)
     log("[AUTOMATE] Player Info: " .. serpent.block(log_data))
 end
 
+local function find_items_in_nearby_containers(player, item_name, search_radius, container_type)
+    local nearby_containers = player.surface.find_entities_filtered({
+        position = player.position,
+        radius = search_radius or 100,
+        type = container_type or "container" -- "logistic-container", "cargo-wagon", etc.
+    })
+
+    local found_items = {}
+
+    for _, container in pairs(nearby_containers) do
+        local container_inventory = container.get_inventory(defines.inventory.chest)
+        if container_inventory then
+            local item_stack = container_inventory.find_item_stack(item_name)
+            if item_stack then
+                table.insert(found_items, {container = container, item_stack = item_stack, count = item_stack.count})
+            end
+        end
+    end
+
+    return found_items
+end
+
 remote.add_interface("factorio_tasks", 
 {
+    find_items_in_nearby_containers = function(item_name, search_radius)
+        local player = game.connected_players[1]
+        local found_items = find_items_in_nearby_containers(player, item_name, search_radius)
+        log("[AUTOMATE] Found items in nearby containers: " .. serpent.block(found_items))
+        return found_items
+    end,
+    
     walk_to_entity = function(entity_type, entity_name, search_radius)
         if player_state.task_state ~= TASK_STATES.IDLE then
             log("[AUTOMATE] Cannot start walk_to_entity task: Player is not idle")
