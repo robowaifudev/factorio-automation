@@ -411,15 +411,27 @@ script.on_event(defines.events.on_tick, function(event)
         if player_state.parameters.path and nearest_entity then
             if not player_state.parameters.path_drawn then
                 for i = 1, #player_state.parameters.path - 1 do
-                    rendering.draw_line{
-                        color = {r = 0, g = 1, b = 0},
-                        width = 2,
-                        from = player_state.parameters.path[i].position,
-                        to = player_state.parameters.path[i + 1].position,
-                        surface = player.surface,
-                        time_to_live = 600,
-                        draw_on_ground = true
-                    }
+                    if player_state.parameters.path[i].needs_destroy_to_reach then
+                        rendering.draw_line{
+                            color = {r = 1, g = 0, b = 0},
+                            width = 10,
+                            from = player_state.parameters.path[i].position,
+                            to = player_state.parameters.path[i + 1].position,
+                            surface = player.surface,
+                            time_to_live = 1200,
+                            draw_on_ground = true
+                        }
+                    else
+                        rendering.draw_line{
+                            color = {r = 0, g = 1, b = 0},
+                            width = 10,
+                            from = player_state.parameters.path[i].position,
+                            to = player_state.parameters.path[i + 1].position,
+                            surface = player.surface,
+                            time_to_live = 1200,
+                            draw_on_ground = true
+                        }
+                    end
                 end
                 player_state.parameters.path_drawn = true
                 log("[AUTOMATE] Path drawn on ground")
